@@ -17,13 +17,18 @@ locals {
 # }
 
 # Network
+data "aws_subnet" "private_subnets" {
+  for_each = local.private_subnets
+  id       = each.value
+}
+
 locals {
   private_subnets = toset(split(",", nonsensitive(data.aws_ssm_parameter.private_subnets.value)))
 }
 
-# data "aws_ssm_parameter" "vpc_id" {
-#   name  = "${local.core_output_prefix}/vpc_id"
-# }
+data "aws_ssm_parameter" "vpc_id" {
+  name = "${local.core_output_prefix}/vpc_id"
+}
 
 data "aws_ssm_parameter" "private_subnets" {
   name = "${local.core_output_prefix}/private_subnets"
