@@ -13,5 +13,6 @@ module "regional_primary" {
   env       = var.env
   is_prod   = var.is_prod
 
-  file_system_id = aws_efs_file_system.primary.id
+  file_system_arn = aws_efs_file_system.primary.arn
+  file_system_id  = aws_efs_file_system.primary.id
 }

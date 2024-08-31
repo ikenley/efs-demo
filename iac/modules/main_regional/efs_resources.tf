@@ -14,6 +14,36 @@ resource "aws_efs_mount_target" "this" {
 #-------------------------------------------------------------------------------
 # Security groups
 #-------------------------------------------------------------------------------
+resource "aws_efs_file_system_policy" "this" {
+  file_system_id = var.file_system_id
+  # TODO require IAM authentication + add in specific roles for 
+  policy = <<EOF
+{
+   "Version":"2012-10-17",
+   "Id":"efs-policy-wizard-fb09a7d8-fbaf-44ec-a350-769ee0df9926",
+   "Statement":[
+      {
+         "Sid":"RequireSsl",
+         "Effect":"Deny",
+         "Principal":{
+            "AWS":"*"
+         },
+         "Action":"*",
+         "Resource":"${var.file_system_arn}",
+         "Condition":{
+            "Bool":{
+               "aws:SecureTransport":"false"
+            }
+         }
+      }
+   ]
+}
+  EOF
+}
+
+#-------------------------------------------------------------------------------
+# Security groups
+#-------------------------------------------------------------------------------
 
 resource "aws_security_group" "efs_mount_target" {
   name        = "${local.id}-efs-mount-target"
