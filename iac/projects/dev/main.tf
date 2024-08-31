@@ -33,6 +33,11 @@ provider "aws" {
 module "main" {
   source = "../../modules/main_root"
 
+  providers = {
+    aws.primary  = aws.primary
+    aws.failover = aws.failover
+  }
+
   namespace = "ik"
   env       = "dev"
   is_prod   = false

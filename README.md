@@ -21,3 +21,7 @@ terraform apply
 - Coming soon?
 
 ---
+
+## TODO
+
+- multi-region (requires refactoring core module a bit)
