@@ -17,17 +17,17 @@ locals {
 # }
 
 # Network
-# locals {
-#   private_subnets = split(",", data.aws_ssm_parameter.private_subnets.value)
-# }
+locals {
+  private_subnets = toset(split(",", nonsensitive(data.aws_ssm_parameter.private_subnets.value)))
+}
 
 # data "aws_ssm_parameter" "vpc_id" {
 #   name  = "${local.core_output_prefix}/vpc_id"
 # }
 
-# data "aws_ssm_parameter" "private_subnets" {
-#   name  = "${local.core_output_prefix}/private_subnets"
-# }
+data "aws_ssm_parameter" "private_subnets" {
+  name = "${local.core_output_prefix}/private_subnets"
+}
 
 # # Data environment
 # data "aws_ssm_parameter" "data_lake_s3_bucket_arn" {
