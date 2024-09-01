@@ -44,10 +44,11 @@ runcmd:
 ```
 
 ```
-sh-5.2$ sudo -i
-cd /mnt/efs/fs1
-ls /mnt/efs/fs1/test
+sudo -i
 mkdir -p /mnt/efs/fs1/test
 echo "Open the pod bay doors, HAL" > /mnt/efs/fs1/test/hello-demo.txt
+echo "I'm afraid I can't let you do that, Dave" > /mnt/efs/fs1/test/HAL.txt
+ls /mnt/efs/fs1/test
 cat /mnt/efs/fs1/test/hello-demo.txt
+cat /mnt/efs/fs1/test/HAL.txt
 ```

@@ -4,10 +4,13 @@
 
 locals {
   efs_mount_point = "/mnt/efs/fs1"
+  instances       = toset(["x", "y"])
 }
 
 # TODO make two instances and verify they share a file system
 resource "aws_instance" "demo" {
+  for_each = local.instances
+
   instance_type        = "t3.nano"
   key_name             = aws_key_pair.demo.key_name
   ami                  = data.aws_ami.amazon_linux.id
@@ -33,11 +36,11 @@ runcmd:
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.demo.id
+    network_interface_id = aws_network_interface.demo[each.key].id
   }
 
   tags = merge(local.tags, {
-    Name = "${local.id}"
+    Name = "${local.id}-${each.value}"
   })
 }
 
@@ -74,12 +77,14 @@ resource "aws_security_group" "demo" {
 }
 
 resource "aws_network_interface" "demo" {
+  for_each = local.instances
+
   source_dest_check = false
   subnet_id         = local.private_subnets[0]
   security_groups   = [aws_security_group.demo.id]
 
   tags = {
-    Name = local.id
+    Name = "${local.id}-${each.key}"
   }
 }
 
