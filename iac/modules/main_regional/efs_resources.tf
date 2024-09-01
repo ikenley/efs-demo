@@ -23,6 +23,24 @@ resource "aws_efs_file_system_policy" "this" {
    "Id":"efs-policy-wizard-fb09a7d8-fbaf-44ec-a350-769ee0df9926",
    "Statement":[
       {
+          "Sid": "efs-statement-41fa655a-3ca9-47a1-8812-e4e6964d6730",
+          "Effect": "Allow",
+          "Principal": {
+              "AWS": "*"
+          },
+          "Action": [
+              "elasticfilesystem:ClientRootAccess",
+              "elasticfilesystem:ClientWrite",
+              "elasticfilesystem:ClientMount"
+          ],
+          "Resource": "arn:aws:elasticfilesystem:us-east-1:924586450630:file-system/fs-0abeb6e3380474bfa",
+          "Condition": {
+              "Bool": {
+                  "elasticfilesystem:AccessedViaMountTarget": "true"
+              }
+          }
+      },
+      {
          "Sid":"RequireSsl",
          "Effect":"Deny",
          "Principal":{

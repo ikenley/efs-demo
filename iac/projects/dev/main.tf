@@ -43,3 +43,19 @@ module "main" {
   is_prod   = false
 
 }
+
+module "ec2_demo" {
+  source = "../../modules/ec2_demo"
+
+  providers = {
+    aws.primary  = aws.primary
+    aws.failover = aws.failover
+  }
+
+  namespace = "ik"
+  env       = "dev"
+  is_prod   = false
+
+  file_system_id = module.main.primary_file_system_id
+
+}

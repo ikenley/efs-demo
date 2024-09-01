@@ -2,9 +2,5 @@
 # todo.tf
 #------------------------------------------------------------------------------
 
-# resource "aws_ssm_parameter" "todo" {
-#   name  = "${local.output_prefix}/todo"
-#   type  = "String"
-#   value = "TODO"
-# }
+
 

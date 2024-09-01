@@ -2,9 +2,13 @@
 # todo.tf
 #------------------------------------------------------------------------------
 
-# resource "aws_ssm_parameter" "todo" {
-#   name  = "${local.output_prefix}/todo"
-#   type  = "String"
-#   value = "TODO"
-# }
+resource "aws_ssm_parameter" "primary_file_system_id" {
+  provider = aws.primary
+  name     = "${local.output_prefix}/primary_file_system_id"
+  type     = "String"
+  value    = aws_efs_file_system.primary.id
+}
 
+output "primary_file_system_id" {
+  value = aws_efs_file_system.primary.id
+}
