@@ -20,65 +20,78 @@ resource "aws_efs_mount_target" "this" {
 #-------------------------------------------------------------------------------
 # Security groups
 #-------------------------------------------------------------------------------
+
+data "aws_iam_policy_document" "file_system_policy" {
+  statement {
+    sid    = "AllowMountTargetForRoles"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = local.read_write_root_role_arns
+    }
+
+    actions = [
+      "elasticfilesystem:ClientRootAccess",
+      "elasticfilesystem:ClientWrite",
+      "elasticfilesystem:ClientMount",
+    ]
+
+    condition {
+      test     = "Bool"
+      variable = "elasticfilesystem:AccessedViaMountTarget"
+      values   = ["true"]
+    }
+
+    resources = [var.file_system_arn]
+  }
+
+  statement {
+    sid    = "AccessPointAccess"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = local.demo_app_access_point_role_arns
+    }
+
+    actions = [
+      "elasticfilesystem:ClientMount",
+      "elasticfilesystem:ClientWrite",
+    ]
+
+    resources = [var.file_system_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "elasticfilesystem:AccessPointArn"
+      values   = [aws_efs_access_point.demo_app_access_point.arn]
+    }
+  }
+
+  statement {
+    sid       = "RequireSsl"
+    effect    = "Deny"
+    resources = [var.file_system_arn]
+    actions   = ["*"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
 resource "aws_efs_file_system_policy" "this" {
   file_system_id = var.file_system_id
   # TODO require IAM authentication + add in specific roles for 
-  policy = <<EOF
-{
-   "Version":"2012-10-17",
-   "Id":"${local.id}-policy",
-   "Statement":[
-      {
-          "Sid": "AllowMountTargetForRoles",
-          "Effect": "Allow",
-          "Principal": {
-              "AWS": ${jsonencode(local.read_write_root_role_arns)}
-          },
-          "Action": [
-              "elasticfilesystem:ClientRootAccess",
-              "elasticfilesystem:ClientWrite",
-              "elasticfilesystem:ClientMount"
-          ],
-          "Resource": "${var.file_system_arn}",
-          "Condition": {
-              "Bool": {
-                  "elasticfilesystem:AccessedViaMountTarget": "true"
-              }
-          }
-      },
-      {
-        "Sid":"AccessPointAccess",
-        "Effect":"Allow",
-        "Principal":{
-            "AWS": ${jsonencode(local.demo_app_access_point_role_arns)}
-        },
-        "Action":[
-            "elasticfilesystem:ClientMount",
-            "elasticfilesystem:ClientWrite"
-        ],
-        "Condition":{
-            "StringEquals":{
-              "elasticfilesystem:AccessPointArn": "${aws_efs_access_point.demo_app_access_point.arn}"
-            }
-        }
-      },
-      {
-         "Sid":"RequireSsl",
-         "Effect":"Deny",
-         "Principal":{
-            "AWS":"*"
-         },
-         "Action":"*",
-         "Resource":"${var.file_system_arn}",
-         "Condition":{
-            "Bool":{
-               "aws:SecureTransport":"false"
-            }
-         }
-      }
-   ]
-}
-  EOF
+  policy = data.aws_iam_policy_document.file_system_policy.json
 }
 
 #-------------------------------------------------------------------------------
@@ -146,4 +159,16 @@ resource "aws_efs_access_point" "demo_app_access_point" {
   tags = merge(local.tags, {
     Name = "${local.id}-demo-app-ap"
   })
+}
+
+#-------------------------------------------------------------------------------
+# Backup policy
+#-------------------------------------------------------------------------------
+
+resource "aws_efs_backup_policy" "policy" {
+  file_system_id = var.file_system_id
+
+  backup_policy {
+    status = "DISABLED"
+  }
 }
