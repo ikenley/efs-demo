@@ -55,4 +55,8 @@ echo "I'm afraid I can't let you do that, Dave" > /mnt/efs/fs1/test/HAL.txt
 ls /mnt/efs/fs1/test
 cat /mnt/efs/fs1/test/hello-demo.txt
 cat /mnt/efs/fs1/test/HAL.txt
+
+echo "Open the pod bay doors, HAL" > /mnt/efs/fs1/Dave.txt
+ls /mnt/efs/fs1
+cat /mnt/efs/fs1/demo_app/Dave.txt
 ```

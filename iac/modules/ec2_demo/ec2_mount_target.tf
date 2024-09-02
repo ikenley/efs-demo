@@ -1,18 +1,18 @@
 #-------------------------------------------------------------------------------
-# EC2 resources
+# EC2 instance which has root-level access and mounts via a Mount Target
+# https://docs.aws.amazon.com/efs/latest/ug/mounting-IAM-option.html
 #-------------------------------------------------------------------------------
 
 locals {
+  mount_target_id = "${local.id}-mount-target"
   efs_mount_point = "/mnt/efs/fs1"
 }
 
-# Instance which has root-level access and mounts via a Mount Target
-# https://docs.aws.amazon.com/efs/latest/ug/mounting-IAM-option.html
 resource "aws_instance" "mount_target" {
   instance_type        = "t3.nano"
-  key_name             = aws_key_pair.demo.key_name
+  key_name             = aws_key_pair.mount_target.key_name
   ami                  = data.aws_ami.amazon_linux.id
-  iam_instance_profile = aws_iam_instance_profile.demo.name
+  iam_instance_profile = aws_iam_instance_profile.mount_target.name
 
   # Configure automatic EFS mounting
   user_data = <<EOF
@@ -34,11 +34,11 @@ runcmd:
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.demo.id
+    network_interface_id = aws_network_interface.mount_target.id
   }
 
   tags = merge(local.tags, {
-    Name = "${local.id}-mount-target"
+    Name = local.mount_target_id
   })
 }
 
@@ -59,9 +59,9 @@ data "aws_ami" "amazon_linux" {
 # Network
 #-------------------------------------------------------------------------------
 
-resource "aws_security_group" "demo" {
+resource "aws_security_group" "mount_target" {
   vpc_id = data.aws_ssm_parameter.vpc_id.value
-  name   = local.id
+  name   = local.mount_target_id
 
   egress {
     from_port   = 0
@@ -77,10 +77,10 @@ resource "aws_security_group" "demo" {
 resource "aws_network_interface" "mount_target" {
   source_dest_check = false
   subnet_id         = local.private_subnets[0]
-  security_groups   = [aws_security_group.demo.id]
+  security_groups   = [aws_security_group.mount_target.id]
 
   tags = {
-    Name = "${local.id}-mount-target"
+    Name = local.mount_target_id
   }
 }
 
@@ -88,8 +88,8 @@ resource "aws_network_interface" "mount_target" {
 # IAM
 #-------------------------------------------------------------------------------
 
-resource "aws_iam_role" "demo" {
-  name = local.id
+resource "aws_iam_role" "mount_target" {
+  name = local.mount_target_id
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : {
@@ -100,36 +100,26 @@ resource "aws_iam_role" "demo" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "demo" {
+resource "aws_iam_role_policy_attachment" "mount_target" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.demo.name
+  role       = aws_iam_role.mount_target.name
 }
 
-resource "aws_iam_instance_profile" "demo" {
-  name = local.id
-  role = aws_iam_role.demo.name
+resource "aws_iam_instance_profile" "mount_target" {
+  name = local.mount_target_id
+  role = aws_iam_role.mount_target.name
 }
-
-# resource "aws_network_interface" "network_interface" {
-#   source_dest_check = false
-#   subnet_id         = var.public_subnets_ids[0]
-#   security_groups   = [aws_security_group.nat_instance_sg.id]
-
-#   tags = {
-#     Name = "${local.id}-nat-instance-network-interface"
-#   }
-# }
 
 #-------------------------------------------------------------------------------
 # Key pair
 #-------------------------------------------------------------------------------
 
-resource "tls_private_key" "demo" {
+resource "tls_private_key" "mount_target" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "demo" {
-  key_name   = local.id
-  public_key = tls_private_key.demo.public_key_openssh
+resource "aws_key_pair" "mount_target" {
+  key_name   = local.mount_target_id
+  public_key = tls_private_key.mount_target.public_key_openssh
 }

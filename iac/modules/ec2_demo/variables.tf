@@ -18,3 +18,4 @@ variable "is_prod" {
 }
 
 variable "file_system_id" {}
+variable "access_point_id" {}

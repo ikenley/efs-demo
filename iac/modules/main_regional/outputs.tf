@@ -25,3 +25,19 @@ resource "aws_ssm_parameter" "efs_mount_target_security_group_id" {
   type  = "String"
   value = aws_security_group.efs_mount_target.id
 }
+
+resource "aws_ssm_parameter" "demo_app_access_point_arn" {
+  name  = "${local.output_prefix}/demo_app_access_point_arn"
+  type  = "String"
+  value = aws_efs_access_point.demo_app_access_point.arn
+}
+
+resource "aws_ssm_parameter" "demo_app_access_point_id" {
+  name  = "${local.output_prefix}/demo_app_access_point_id"
+  type  = "String"
+  value = aws_efs_access_point.demo_app_access_point.id
+}
+
+output "demo_app_access_point_id" {
+  value = aws_efs_access_point.demo_app_access_point.id
+}

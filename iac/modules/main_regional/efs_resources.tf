@@ -4,7 +4,8 @@
 
 locals {
   // Change to Set to remove duplicates and ordinality
-  read_write_root_role_arns = toset(var.read_write_root_role_arns)
+  read_write_root_role_arns       = toset(var.read_write_root_role_arns)
+  demo_app_access_point_role_arns = toset(var.demo_app_access_point_role_arns)
 }
 
 resource "aws_efs_mount_target" "this" {
@@ -44,6 +45,22 @@ resource "aws_efs_file_system_policy" "this" {
                   "elasticfilesystem:AccessedViaMountTarget": "true"
               }
           }
+      },
+      {
+        "Sid":"AccessPointAccess",
+        "Effect":"Allow",
+        "Principal":{
+            "AWS": ${jsonencode(local.demo_app_access_point_role_arns)}
+        },
+        "Action":[
+            "elasticfilesystem:ClientMount",
+            "elasticfilesystem:ClientWrite"
+        ],
+        "Condition":{
+            "StringEquals":{
+              "elasticfilesystem:AccessPointArn": "${aws_efs_access_point.demo_app_access_point.arn}"
+            }
+        }
       },
       {
          "Sid":"RequireSsl",
@@ -99,3 +116,34 @@ resource "aws_vpc_security_group_ingress_rule" "allow_nfs_private_subnet" {
 #   cidr_ipv4         = "0.0.0.0/0"
 #   ip_protocol       = "-1" # semantically equivalent to all ports
 # }
+
+#-------------------------------------------------------------------------------
+# Access Points
+#-------------------------------------------------------------------------------
+
+locals {
+  demo_app_uid = 1776
+  demo_app_gid = 17
+}
+
+resource "aws_efs_access_point" "demo_app_access_point" {
+  file_system_id = var.file_system_id
+
+  root_directory {
+    creation_info {
+      owner_gid   = local.demo_app_gid
+      owner_uid   = local.demo_app_uid
+      permissions = 755
+    }
+    path = "/demo_app"
+  }
+
+  posix_user {
+    gid = local.demo_app_gid
+    uid = local.demo_app_uid
+  }
+
+  tags = merge(local.tags, {
+    Name = "${local.id}-demo-app-ap"
+  })
+}
