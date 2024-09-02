@@ -42,6 +42,10 @@ module "main" {
   env       = "dev"
   is_prod   = false
 
+  read_write_root_role_arns = [
+    "arn:aws:iam::924586450630:role/ik-dev-ec2-demo"
+  ]
+
 }
 
 module "ec2_demo" {

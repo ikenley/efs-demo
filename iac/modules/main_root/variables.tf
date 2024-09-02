@@ -17,4 +17,7 @@ variable "is_prod" {
   type        = bool
 }
 
+variable "read_write_root_role_arns" {
+  description = "List of IAM role ARNs which should have read/write access to NFS root"
+}
 

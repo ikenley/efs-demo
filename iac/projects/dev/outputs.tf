@@ -1,3 +1,3 @@
-# output "api_gateway_invoke_url" {
-#   value = module.main.api_gateway_invoke_url
-# }
+output "ec2_demo_iam_role_arn" {
+  value = module.ec2_demo.demo_iam_role_arn
+}

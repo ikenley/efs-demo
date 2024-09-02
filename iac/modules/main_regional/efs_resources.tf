@@ -2,6 +2,11 @@
 # Regional EFS resources
 #-------------------------------------------------------------------------------
 
+locals {
+  // Change to Set to remove duplicates and ordinality
+  read_write_root_role_arns = toset(var.read_write_root_role_arns)
+}
+
 resource "aws_efs_mount_target" "this" {
   for_each = local.private_subnets
 
@@ -20,20 +25,20 @@ resource "aws_efs_file_system_policy" "this" {
   policy = <<EOF
 {
    "Version":"2012-10-17",
-   "Id":"efs-policy-wizard-fb09a7d8-fbaf-44ec-a350-769ee0df9926",
+   "Id":"${local.id}-policy",
    "Statement":[
       {
-          "Sid": "efs-statement-41fa655a-3ca9-47a1-8812-e4e6964d6730",
+          "Sid": "AllowMountTargetForRoles",
           "Effect": "Allow",
           "Principal": {
-              "AWS": "*"
+              "AWS": ${jsonencode(local.read_write_root_role_arns)}
           },
           "Action": [
               "elasticfilesystem:ClientRootAccess",
               "elasticfilesystem:ClientWrite",
               "elasticfilesystem:ClientMount"
           ],
-          "Resource": "arn:aws:elasticfilesystem:us-east-1:924586450630:file-system/fs-0abeb6e3380474bfa",
+          "Resource": "${var.file_system_arn}",
           "Condition": {
               "Bool": {
                   "elasticfilesystem:AccessedViaMountTarget": "true"

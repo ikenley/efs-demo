@@ -4,13 +4,11 @@
 
 locals {
   efs_mount_point = "/mnt/efs/fs1"
-  instances       = toset(["x", "y"])
 }
 
-# TODO make two instances and verify they share a file system
-resource "aws_instance" "demo" {
-  for_each = local.instances
-
+# Instance which has root-level access and mounts via a Mount Target
+# https://docs.aws.amazon.com/efs/latest/ug/mounting-IAM-option.html
+resource "aws_instance" "mount_target" {
   instance_type        = "t3.nano"
   key_name             = aws_key_pair.demo.key_name
   ami                  = data.aws_ami.amazon_linux.id
@@ -29,18 +27,18 @@ runcmd:
 - file_system_id_1=${var.file_system_id}
 - efs_mount_point_1=${local.efs_mount_point}
 - mkdir -p "${local.efs_mount_point}"
-- printf "\n${var.file_system_id}:/ ${local.efs_mount_point} efs tls,_netdev\n" >> /etc/fstab
+- printf "\n${var.file_system_id}:/ ${local.efs_mount_point} efs tls,iam,_netdev\n" >> /etc/fstab
 - test -f "/sbin/mount.efs" && grep -ozP 'client-info]\nsource' '/etc/amazon/efs/efs-utils.conf'; if [[ $? == 1 ]]; then printf "\n[client-info]\nsource=liw\n" >> /etc/amazon/efs/efs-utils.conf; fi;
 - retryCnt=15; waitTime=30; while true; do mount -a -t efs,nfs4 defaults; if [ $? = 0 ] || [ $retryCnt -lt 1 ]; then echo File system mounted successfully; break; fi; echo File system not available, retrying to mount.; ((retryCnt--)); sleep $waitTime; done;
   EOF
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.demo[each.key].id
+    network_interface_id = aws_network_interface.demo.id
   }
 
   tags = merge(local.tags, {
-    Name = "${local.id}-${each.value}"
+    Name = "${local.id}-mount-target"
   })
 }
 
@@ -76,15 +74,13 @@ resource "aws_security_group" "demo" {
   }
 }
 
-resource "aws_network_interface" "demo" {
-  for_each = local.instances
-
+resource "aws_network_interface" "mount_target" {
   source_dest_check = false
   subnet_id         = local.private_subnets[0]
   security_groups   = [aws_security_group.demo.id]
 
   tags = {
-    Name = "${local.id}-${each.key}"
+    Name = "${local.id}-mount-target"
   }
 }
 

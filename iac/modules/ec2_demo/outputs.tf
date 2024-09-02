@@ -9,6 +9,10 @@ resource "aws_ssm_parameter" "demo_iam_role_arn" {
   tags  = local.tags
 }
 
+output "demo_iam_role_arn" {
+  value = aws_iam_role.demo.arn
+}
+
 resource "aws_ssm_parameter" "demo_iam_role_name" {
   name  = "${local.output_prefix}/demo_iam_role_name"
   type  = "String"

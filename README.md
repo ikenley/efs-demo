@@ -44,6 +44,10 @@ runcmd:
 ```
 
 ```
+sudo mount -t efs -o tls,iam fs-0abeb6e3380474bfa /mnt/efs/fs1
+```
+
+```
 sudo -i
 mkdir -p /mnt/efs/fs1/test
 echo "Open the pod bay doors, HAL" > /mnt/efs/fs1/test/hello-demo.txt
