@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Main local varialble setup
+# Main regional resources
 #-------------------------------------------------------------------------------
 
 terraform {
@@ -7,7 +7,7 @@ terraform {
     aws = {
       source                = "hashicorp/aws"
       version               = ">= 5.65.0"
-      configuration_aliases = [aws.primary, aws.failover]
+      configuration_aliases = [aws]
     }
   }
 }
@@ -26,6 +26,6 @@ locals {
     Terraform   = true
     Environment = var.env
     is_prod     = var.is_prod
-    module      = "main_root"
+    module      = "main_regional"
   })
 }

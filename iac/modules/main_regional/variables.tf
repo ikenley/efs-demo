@@ -24,3 +24,6 @@ variable "read_write_root_role_arns" {
 variable "demo_app_access_point_role_arns" {
   description = "List of IAM role ARNS which should have read/write access to demo_app Access Point"
 }
+
+variable "file_system_arn" {}
+variable "file_system_id" {}

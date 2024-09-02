@@ -1,5 +1,6 @@
 #-------------------------------------------------------------------------------
-# Main local varialble setup
+# Demo EC2 instance which mounts an EFS system
+# This cuts some Terraform corners, but the underlying compute is valid + secure
 #-------------------------------------------------------------------------------
 
 terraform {
@@ -7,7 +8,7 @@ terraform {
     aws = {
       source                = "hashicorp/aws"
       version               = ">= 5.65.0"
-      configuration_aliases = [aws.primary, aws.failover]
+      configuration_aliases = [aws.primary]
     }
   }
 }
@@ -19,13 +20,13 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
   aws_region = data.aws_region.current.name
 
-  id            = "${var.namespace}-${var.env}-efs-demo"
-  output_prefix = "/${var.namespace}/${var.env}/efs-demo"
+  id            = "${var.namespace}-${var.env}-ec2-demo"
+  output_prefix = "/${var.namespace}/${var.env}/ec2-demo"
 
   tags = merge(var.tags, {
     Terraform   = true
     Environment = var.env
     is_prod     = var.is_prod
-    module      = "main_root"
+    module      = "ec2_demo"
   })
 }
