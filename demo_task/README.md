@@ -16,17 +16,17 @@ Ordinarily you'd use an automated, cloud-based CI/CD system (e.g. CodePipeline).
 
 ```
 # Build the Docker image
-docker build -t iik-dev-efs-ecs-demo-task:test .
+docker build -t ik-dev-efs-ecs-demo-task:test .
 
 # Start the Docker image with the docker run command.
-docker run --env-file .env iik-dev-efs-ecs-demo-task:test
+docker run ik-dev-efs-ecs-demo-task:test
 
 # Test your application locally using the RIE
 curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
 
 # Deploy
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 924586450630.dkr.ecr.us-east-1.amazonaws.com
-aws ecr create-repository --repository-name iik-dev-efs-ecs-demo-task --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE
-docker tag iik-dev-efs-ecs-demo-task:latest 924586450630.dkr.ecr.us-east-1.amazonaws.com/iik-dev-efs-ecs-demo-task:latest
-docker push 924586450630.dkr.ecr.us-east-1.amazonaws.com/iik-dev-efs-ecs-demo-task:latest
+aws ecr create-repository --repository-name ik-dev-efs-ecs-demo-task --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE
+docker tag ik-dev-efs-ecs-demo-task:latest 924586450630.dkr.ecr.us-east-1.amazonaws.com/ik-dev-efs-ecs-demo-task:latest
+docker push 924586450630.dkr.ecr.us-east-1.amazonaws.com/ik-dev-efs-ecs-demo-task:latest
 ```
