@@ -66,5 +66,20 @@ module "ec2_demo" {
 
   file_system_id  = module.main.primary_file_system_id
   access_point_id = module.main.demo_app_access_point_id
+}
 
+module "ecs_demo" {
+  source = "../../modules/ecs_demo"
+
+  providers = {
+    aws.primary  = aws.primary
+    aws.failover = aws.failover
+  }
+
+  namespace = "ik"
+  env       = "dev"
+  is_prod   = false
+
+  file_system_id  = module.main.primary_file_system_id
+  access_point_id = module.main.demo_app_access_point_id
 }
