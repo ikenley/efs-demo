@@ -47,7 +47,8 @@ module "main" {
   ]
 
   demo_app_access_point_role_arns = [
-    "arn:aws:iam::924586450630:role/ik-dev-ec2-demo-access-point"
+    "arn:aws:iam::924586450630:role/ik-dev-ec2-demo-access-point",
+    "arn:aws:iam::924586450630:role/ik-dev-efs-ecs-demo-task-role"
   ]
 
 }
