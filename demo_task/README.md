@@ -19,14 +19,21 @@ Ordinarily you'd use an automated, cloud-based CI/CD system (e.g. CodePipeline).
 docker build -t ik-dev-efs-ecs-demo-task:test .
 
 # Start the Docker image with the docker run command.
-docker run ik-dev-efs-ecs-demo-task:test
+docker run -e EFS_MOUNT_POINT="/tmp"  ik-dev-efs-ecs-demo-task:test
 
 # Test your application locally using the RIE
 curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
-
-# Deploy
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 924586450630.dkr.ecr.us-east-1.amazonaws.com
-aws ecr create-repository --repository-name ik-dev-efs-ecs-demo-task --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE
-docker tag ik-dev-efs-ecs-demo-task:latest 924586450630.dkr.ecr.us-east-1.amazonaws.com/ik-dev-efs-ecs-demo-task:latest
-docker push 924586450630.dkr.ecr.us-east-1.amazonaws.com/ik-dev-efs-ecs-demo-task:latest
 ```
+
+---
+
+## Running the Task
+
+To manually run the Task as an ECS Standalone Task, you can use the AWS CLI:
+
+```
+./scripts/run_task.sh
+
+```
+
+Ordinarily this type of "job"-style Task would be triggered by some sort of event. For demo purposes we just manually start the Task via the AWS CLI.

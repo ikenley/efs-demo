@@ -42,6 +42,20 @@ resource "aws_ssm_parameter" "mount_target_key_pair_key_pem" {
   tags        = local.tags
 }
 
+resource "aws_ssm_parameter" "mount_target_security_group_arn" {
+  name  = "${local.output_prefix}/mount_target/security_group_arn"
+  type  = "String"
+  value = aws_security_group.mount_target.arn
+  tags  = local.tags
+}
+
+resource "aws_ssm_parameter" "mount_target_security_group_id" {
+  name  = "${local.output_prefix}/mount_target/security_group_id"
+  type  = "String"
+  value = aws_security_group.mount_target.id
+  tags  = local.tags
+}
+
 
 resource "aws_ssm_parameter" "access_point_iam_role_arn" {
   name  = "${local.output_prefix}/access_point/iam_role_arn"
@@ -81,4 +95,18 @@ resource "aws_ssm_parameter" "access_point_key_pair_key_pem" {
   type        = "SecureString"
   value       = tls_private_key.access_point.private_key_pem
   tags        = local.tags
+}
+
+resource "aws_ssm_parameter" "access_point_security_group_arn" {
+  name  = "${local.output_prefix}/access_point/security_group_arn"
+  type  = "String"
+  value = aws_security_group.access_point.arn
+  tags  = local.tags
+}
+
+resource "aws_ssm_parameter" "access_point_security_group_id" {
+  name  = "${local.output_prefix}/access_point/security_group_id"
+  type  = "String"
+  value = aws_security_group.access_point.id
+  tags  = local.tags
 }

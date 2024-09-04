@@ -4,6 +4,8 @@
 
 locals {
   ecs_demo_task_id = "${local.id}-task"
+  efs_mount_point  = "/mnt/efs/fs1"
+  volume_name      = "efsMain"
 }
 
 resource "aws_ecs_task_definition" "ecs_demo_task" {
@@ -12,22 +14,30 @@ resource "aws_ecs_task_definition" "ecs_demo_task" {
   task_role_arn            = aws_iam_role.ecs_demo_task_role.arn
   execution_role_arn       = aws_iam_role.ecs_demo_task_execution_role.arn
   network_mode             = "awsvpc"
-  cpu                      = 1024
-  memory                   = 2048
+  cpu                      = 512
+  memory                   = 1024
   requires_compatibilities = ["FARGATE"]
 
   container_definitions = jsonencode([
     {
-      name      = "ai-image"
-      image     = "${aws_ecr_repository.ecs_demo_task.repository_url}:6"
+      name      = "efs_ecs_demo"
+      image     = "${aws_ecr_repository.ecs_demo_task.repository_url}:2"
       cpu       = 512
       memory    = 1024
       essential = true
 
       environment = [
         {
-          name : "PLACEHOLDER",
-          value : "REPLACE_IF_WE_NEED_REAL_ENV"
+          name : "EFS_MOUNT_POINT",
+          value : local.efs_mount_point
+        }
+      ]
+
+      mountPoints = [
+        {
+          sourceVolume = local.volume_name,
+          "containerPath" : local.efs_mount_point,
+          "readOnly" : false
         }
       ]
 
@@ -35,12 +45,26 @@ resource "aws_ecs_task_definition" "ecs_demo_task" {
         logDriver = "awslogs",
         options = {
           awslogs-group         = aws_cloudwatch_log_group.ecs_demo_task.name,
-          awslogs-region        = "us-east-1",
+          awslogs-region        = local.aws_region,
           awslogs-stream-prefix = "ecs"
         }
       }
     }
   ])
+
+  volume {
+    name = local.volume_name
+
+    efs_volume_configuration {
+      file_system_id          = var.file_system_id
+      transit_encryption      = "ENABLED"
+      transit_encryption_port = 2049
+      authorization_config {
+        access_point_id = var.access_point_id
+        iam             = "ENABLED"
+      }
+    }
+  }
 
   # lifecycle {
   #   ignore_changes = [
@@ -145,5 +169,7 @@ resource "aws_security_group" "ecs_demo_task" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = local.tags
+  tags = merge(local.tags, {
+    Name = local.ecs_demo_task_id
+  })
 }
