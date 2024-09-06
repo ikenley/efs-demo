@@ -45,6 +45,8 @@ runcmd:
 
 ```
 sudo mount -t efs -o tls,iam fs-0abeb6e3380474bfa /mnt/efs/fs1
+
+sudo mount -t efs -o tls fs-0370f3dbc73ec6b80 /mnt/efs/fs1
 ```
 
 ```
